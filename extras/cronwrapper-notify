@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Usage: extras/cronwrapper-notify <LOG_FILE_PATH> <EXIT_CODE_PLEX_UPDATE>
+
+# define variables
+CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
+LOG_FILE_PATH="${1}" # DKTODO: use getopt --log-file-path
+EXIT_CODE_PLEX_UPDATE="${2}" # DKTODO: use getopt --notify, --error
+LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH} 2>/dev/null")"
+
+# DKTODO: add a message with server name and port e.g. link to server?
+MESSAGE=$"Log output:\n${LOG_FILE_CONTENT}"
+
+sendPushoverMessage() {
+  # define local variables
+  local PUSHOVER_API
+  local PUSHOVER_TITLE
+  local PUSHOVER_ENABLE_HTML
+  local PUSHOVER_PRIORITY
+  local PUSHOVER_USER
+  local PUSHOVER_TOKEN
+  local PUSHOVER_SOUND
+  local PUSHOVER_POST_DATA
+
+  # set values
+  PUSHOVER_API="https://api.pushover.net/1/messages.json"
+  PUSHOVER_TITLE="Plex Update"
+  PUSHOVER_ENABLE_HTML=1 # DKTODO: should this be enabled?
+  PUSHOVER_PRIORITY=0
+
+  # get function variables
+  PUSHOVER_USER="${1}"
+  PUSHOVER_TOKEN="${2}"
+  PUSHOVER_SOUND="${3}"
+
+  if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ]; then
+    PUSHOVER_PRIORITY=1
+    PUSHOVER_TITLE="${PUSHOVER_TITLE}: Error"
+  fi
+
+  PUSHOVER_POST_DATA="title=${PUSHOVER_TITLE}&token=${PUSHOVER_TOKEN}&user=${PUSHOVER_USER}&message=${MESSAGE}&html=${PUSHOVER_ENABLE_HTML}&priority=${PUSHOVER_PRIORITY}"
+
+  if [ -n "${PUSHOVER_SOUND}" ]; then
+    PUSHOVER_POST_DATA="${PUSHOVER_POST_DATA}&sound=${PUSHOVER_SOUND}"
+  fi
+
+  wget \
+    --post-data="${PUSHOVER_POST_DATA}" \
+    ${PUSHOVER_API}
+}
+
+if [ ! -f ${CONFIG_CRON_NOTIFY} ]; then
+  echo "ERROR: You have not configured ${CONFIG_CRON_NOTIFY}" >&2
+  exit 255
+else
+  source ${CONFIG_CRON_NOTIFY}
+fi
+
+if [ "${SEND_PUSHOVER}" = "yes" ]; then
+  if [ -n "${PUSHOVER_USER}" ] && [ -n "${PUSHOVER_TOKEN}" ];then
+    sendPushoverMessage "${PUSHOVER_USER}" "${PUSHOVER_TOKEN}" "${PUSHOVER_SOUND}"
+  else
+    echo "ERROR: Config \"PUSHOVER_USER\" and/or \"PUSHOVER_TOKEN\" missing in ${CONFIG_CRON_NOTIFY}" >&2
+    exit 255
+  fi
+fi

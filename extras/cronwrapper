@@ -62,7 +62,7 @@ if [ $RET -ne 0 ]; then
 
   # if there is a notify script
   if [ -n "${NOTIFY_SCRIPT}" ] && [ -f "${NOTIFY_SCRIPT}" ]; then
-    bash "${NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
+    source "${NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
   fi
 
 	# Output will produce a cron email, so we can reset the exit status

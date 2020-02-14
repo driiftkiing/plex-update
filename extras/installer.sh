@@ -273,22 +273,22 @@ configure_cron() {
     fi
 
     # DKTODO: is this the correct place?
-		echo
-		echo -n "Should pushover send you a message if an update is available/installed? "
-		if noyes; then
-			SEND_PUSHOVER=yes
+    echo
+    echo -n "Should pushover send you a message if an update is available/installed? "
+    if noyes; then
+      SEND_PUSHOVER=yes
 
       read -e -p "Pushover User: " -i "" PUSHOVER_USER
       read -e -p "Pushover Token: " -i "" PUSHOVER_TOKEN
       read -e -p "Pushover Sound: " -i "" PUSHOVER_SOUND
 
-			save_config "${CRON_NOTIFY_VARS}" "${CONFIG_CRON_NOTIFY}"
+      save_config "${CRON_NOTIFY_VARS}" "${CONFIG_CRON_NOTIFY}"
 
       # set cron notify script path
-			CRON_NOTIFY_SCRIPT="${FULL_PATH}/extras/cronwrapper-notify"
-		fi
+      CRON_NOTIFY_SCRIPT="${FULL_PATH}/extras/cronwrapper-notify"
+    fi
 
-		save_config "$CRONVARS" "${CONFIGCRON}"
+    save_config "$CRONVARS" "${CONFIGCRON}"
 
     echo
     echo -n "Installing daily cron job... "

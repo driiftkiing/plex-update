@@ -36,12 +36,12 @@ elif [ ${EUID} -eq 0 ]; then
 fi
 
 if [ -n "$CONF" ]; then
-	# We have a config file, prefix it with parameter
-	if [ ! -f "${CONF}" ]; then
-		echo "ERROR: Cannot find config file (tried ${CONF})" >&2
-		exit 255
-	fi
-	CONF="--config=${CONF}"
+  # We have a config file, prefix it with parameter
+  if [ ! -f "${CONF}" ]; then
+    echo "ERROR: Cannot find config file (tried ${CONF})" >&2
+    exit 255
+  fi
+  CONF="--config=${CONF}"
 fi
 
 LOGFILE=$(mktemp /tmp/plexupdate.cron.XXXX)
@@ -49,15 +49,15 @@ LOGFILE=$(mktemp /tmp/plexupdate.cron.XXXX)
 RET=0
 if $LOGGING; then
   "${SCRIPT}" "${CONF}" 2>&1 | tee "${LOGFILE}" | logger -t plexupdate -p daemon.info
-	RET="${PIPESTATUS[0]}"
+  RET="${PIPESTATUS[0]}"
 else
   "${SCRIPT}" "${CONF}" >"${LOGFILE}" 2>&1
-	RET=$?
+  RET=$?
 fi
 
 if [ $RET -ne 0 ]; then
   # DKTODO: maybe move cron notification into the notify script?
-	# Make sure user gets an email about this (when not success or if user has specified when)
+  # Make sure user gets an email about this (when not success or if user has specified when)
   cat "${LOGFILE}" >&2
 
   # execute notify-script if defined and available
@@ -65,10 +65,10 @@ if [ $RET -ne 0 ]; then
     source "${CRON_NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
   fi
 
-	# Output will produce a cron email, so we can reset the exit status
-	if [ $RET -eq 10 ]; then
-		RET=0
-	fi
+  # Output will produce a cron email, so we can reset the exit status
+  if [ $RET -eq 10 ]; then
+    RET=0
+  fi
 fi
 
 rm "${LOGFILE}" 2>/dev/null

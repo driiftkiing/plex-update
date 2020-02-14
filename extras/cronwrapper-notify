@@ -3,7 +3,7 @@
 
 # define variables
 CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
-LOG_FILE_PATH="${1}" # DKTODO: use getopt --log-file-path
+LOG_FILE_PATH="${1}"         # DKTODO: use getopt --log-file-path
 EXIT_CODE_PLEX_UPDATE="${2}" # DKTODO: use getopt --notify, --error
 LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH} 2>/dev/null")"
 
@@ -56,7 +56,7 @@ else
 fi
 
 if [ "${SEND_PUSHOVER}" = "yes" ]; then
-  if [ -n "${PUSHOVER_USER}" ] && [ -n "${PUSHOVER_TOKEN}" ];then
+  if [ -n "${PUSHOVER_USER}" ] && [ -n "${PUSHOVER_TOKEN}" ]; then
     sendPushoverMessage "${PUSHOVER_USER}" "${PUSHOVER_TOKEN}" "${PUSHOVER_SOUND}"
   else
     echo "ERROR: Config \"PUSHOVER_USER\" and/or \"PUSHOVER_TOKEN\" missing in ${CONFIG_CRON_NOTIFY}" >&2

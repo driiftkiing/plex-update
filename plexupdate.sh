@@ -484,19 +484,20 @@ if [ -n "${PLEXSERVER}" -a "${AUTOINSTALL}" = "yes" ]; then
 	fi
 fi
 
-if [ "${AUTOINSTALL}" = "yes" ]; then
-	if ! hash ldconfig 2>/dev/null && [ "${REDHAT}" = "no" ]; then
-		export PATH=$PATH:/sbin
-	fi
-
-	${DISTRO_INSTALL} "${DOWNLOADDIR}/${FILENAME}"
-	RET=$?
-	if [ ${RET} -ne 0 ]; then
-		# Clarify why this failed, so user won't be left in the dark
-		error "Failed to install update. Command '${DISTRO_INSTALL} "${DOWNLOADDIR}/${FILENAME}"' returned error code ${RET}"
-		exit ${RET}
-	fi
-fi
+# DKTODO: disabled install for testing
+#if [ "${AUTOINSTALL}" = "yes" ]; then
+#	if ! hash ldconfig 2>/dev/null && [ "${REDHAT}" = "no" ]; then
+#		export PATH=$PATH:/sbin
+#	fi
+#
+#	${DISTRO_INSTALL} "${DOWNLOADDIR}/${FILENAME}"
+#	RET=$?
+#	if [ ${RET} -ne 0 ]; then
+#		# Clarify why this failed, so user won't be left in the dark
+#		error "Failed to install update. Command '${DISTRO_INSTALL} "${DOWNLOADDIR}/${FILENAME}"' returned error code ${RET}"
+#		exit ${RET}
+#	fi
+#fi
 
 if [ "${AUTODELETE}" = "yes" ]; then
 	if [ "${AUTOINSTALL}" = "yes" ]; then

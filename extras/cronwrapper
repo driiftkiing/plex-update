@@ -61,8 +61,8 @@ if [ $RET -ne 0 ]; then
   cat "${LOGFILE}" >&2
 
   # execute notify-script if defined and available
-  if [ -n "${NOTIFY_SCRIPT}" ] && [ -f "${NOTIFY_SCRIPT}" ]; then
-    source "${NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
+  if [ -n "${CRON_NOTIFY_SCRIPT}" ] && [ -f "${CRON_NOTIFY_SCRIPT}" ]; then
+    source "${CRON_NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
   fi
 
 	# Output will produce a cron email, so we can reset the exit status

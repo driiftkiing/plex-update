@@ -4,6 +4,7 @@ ORIGIN_REPO="https://github.com/${GIT_OWNER:-mrworf}/plexupdate"
 FULL_PATH="/opt/plexupdate"
 CONFIGFILE="/etc/plexupdate.conf"
 CONFIGCRON="/etc/plexupdate.cron.conf"
+CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
 CRONWRAPPER="/etc/cron.daily/plexupdate"
 VERBOSE=yes #to be inherited by get-plex-token, do not save to config
 
@@ -14,7 +15,8 @@ PUBLIC=
 
 # variables to save in config
 CONFIGVARS="AUTOINSTALL AUTODELETE DOWNLOADDIR TOKEN FORCE FORCEALL PUBLIC AUTOSTART AUTOUPDATE PLEXSERVER PLEXPORT CHECKUPDATE NOTIFY"
-CRONVARS="CONF SCRIPT LOGGING"
+CRONVARS="CONF SCRIPT LOGGING CRON_NOTIFY_SCRIPT"
+CRON_NOTIFY_VARS="SEND_PUSHOVER PUSHOVER_USER PUSHOVER_TOKEN PUSHOVER_SOUND"
 
 install() {
   echo "'$req' is required but not installed, attempting to install..."
@@ -269,6 +271,22 @@ configure_cron() {
       NOTIFY=yes
       save_config "$CONFIGVARS" "$CONFIGFILE"
     fi
+
+    # DKTODO: is this the correct place?
+		echo
+		echo -n "Should pushover send you a message if an update is available/installed? "
+		if noyes; then
+			SEND_PUSHOVER=yes
+
+      read -e -p "Pushover User: " -i "" PUSHOVER_USER
+      read -e -p "Pushover Token: " -i "" PUSHOVER_TOKEN
+      read -e -p "Pushover Sound: " -i "" PUSHOVER_SOUND
+
+			save_config "${CRON_NOTIFY_VARS}" "${CONFIG_CRON_NOTIFY}"
+
+      # set cron notify script path
+			CRON_NOTIFY_SCRIPT="${FULL_PATH}/extras/cronwrapper-notify"
+		fi
 
 		save_config "$CRONVARS" "${CONFIGCRON}"
 

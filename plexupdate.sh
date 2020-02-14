@@ -327,6 +327,9 @@ if [ "${CHECKUPDATE}" = "yes" -a "${AUTOUPDATE}" = "no" ]; then
 	for filename in $PLEXUPDATE_FILES; do
 		[ -f "$filename" ] || error "Update check failed. '$filename' could not be found"
 
+    # URL for new version check
+    UPSTREAM_GIT_URL="https://raw.githubusercontent.com/${GIT_OWNER:-mrworf}/plexupdate/${BRANCHNAME:-master}"
+
 		REMOTE_SHA=$(getRemoteSHA "$UPSTREAM_GIT_URL/$filename") || error "Update check failed. Unable to fetch '$UPSTREAM_GIT_URL/$filename'."
 		LOCAL_SHA=$(getLocalSHA "$filename")
 		if [ "$REMOTE_SHA" != "$LOCAL_SHA" ]; then

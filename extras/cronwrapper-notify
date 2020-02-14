@@ -6,9 +6,11 @@ CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
 LOG_FILE_PATH="${1}"         # DKTODO: use getopt --log-file-path
 EXIT_CODE_PLEX_UPDATE="${2}" # DKTODO: use getopt --notify, --error
 LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH}" 2>/dev/null)"
+NOTIFY_LEVEL="notify"
 
-# DKTODO: add a message with server name and port e.g. link to server?
-MESSAGE=$"Log output:\n${LOG_FILE_CONTENT}"
+if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ]; then
+  NOTIFY_LEVEL="error"
+fi
 
 sendPushoverMessage() {
   # define local variables
@@ -16,38 +18,48 @@ sendPushoverMessage() {
   local PUSHOVER_TITLE
   local PUSHOVER_ENABLE_HTML
   local PUSHOVER_PRIORITY
+  local PUSHOVER_MESSAGE_STATUS_COLOR
   local PUSHOVER_USER
   local PUSHOVER_TOKEN
   local PUSHOVER_SOUND
   local PUSHOVER_POST_DATA
+  local PUSHOVER_MESSAGE
 
   # set values
   PUSHOVER_API="https://api.pushover.net/1/messages.json"
   PUSHOVER_TITLE="Plex Update"
-  PUSHOVER_ENABLE_HTML=1 # DKTODO: should this be enabled?
+  PUSHOVER_ENABLE_HTML=1
   PUSHOVER_PRIORITY=0
+  PUSHOVER_MESSAGE_STATUS_COLOR="blue"
 
   # get function variables
   PUSHOVER_USER="${1}"
   PUSHOVER_TOKEN="${2}"
   PUSHOVER_SOUND="${3}"
 
-  if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ]; then
+  if [ "${NOTIFY_LEVEL}" == 'error' ]; then
     PUSHOVER_PRIORITY=1
     PUSHOVER_TITLE="${PUSHOVER_TITLE}: Error"
+    PUSHOVER_MESSAGE_STATUS_COLOR="red"
   fi
 
-  PUSHOVER_POST_DATA="title=${PUSHOVER_TITLE}&token=${PUSHOVER_TOKEN}&user=${PUSHOVER_USER}&message=${MESSAGE}&html=${PUSHOVER_ENABLE_HTML}&priority=${PUSHOVER_PRIORITY}"
+  PUSHOVER_MESSAGE="<b>App:</b> <font color='#e5a00d'><i>plexupdate</i></font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Status:</b> <font color='${PUSHOVER_MESSAGE_STATUS_COLOR}'>${NOTIFY_LEVEL^}</font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Log-output:</b><br /><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}${LOG_FILE_CONTENT}"
+
+  PUSHOVER_POST_DATA="title=${PUSHOVER_TITLE}&token=${PUSHOVER_TOKEN}&user=${PUSHOVER_USER}&message=${PUSHOVER_MESSAGE}&html=${PUSHOVER_ENABLE_HTML}&priority=${PUSHOVER_PRIORITY}"
 
   if [ -n "${PUSHOVER_SOUND}" ]; then
     PUSHOVER_POST_DATA="${PUSHOVER_POST_DATA}&sound=${PUSHOVER_SOUND}"
   fi
 
-  wget \
-    --quiet \
-    -O /dev/null \
-    --post-data="${PUSHOVER_POST_DATA}" \
-    ${PUSHOVER_API}
+  HTTP_STATUS_CODE=$(wget --server-response --quiet -O /dev/null --post-data="${PUSHOVER_POST_DATA}" "${PUSHOVER_API}" 2>&1 | grep "HTTP/" | awk '{print $2}')
+
+  if [ "$HTTP_STATUS_CODE" -ne 200 ]; then
+    echo "ERROR: Something went wrong on sending pushover message. HTTP status-code is '${HTTP_STATUS_CODE}'" >&2
+    exit 255
+  fi
 }
 
 if [ ! -f ${CONFIG_CRON_NOTIFY} ]; then

@@ -60,7 +60,7 @@ if [ $RET -ne 0 ]; then
 	# Make sure user gets an email about this (when not success or if user has specified when)
   cat "${LOGFILE}" >&2
 
-  # if there is a notify script
+  # execute notify-script if defined and available
   if [ -n "${NOTIFY_SCRIPT}" ] && [ -f "${NOTIFY_SCRIPT}" ]; then
     source "${NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
   fi

@@ -44,6 +44,8 @@ sendPushoverMessage() {
   fi
 
   wget \
+    --quiet \
+    -O /dev/null \
     --post-data="${PUSHOVER_POST_DATA}" \
     ${PUSHOVER_API}
 }

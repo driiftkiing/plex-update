@@ -5,7 +5,7 @@
 CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
 LOG_FILE_PATH="${1}"         # DKTODO: use getopt --log-file-path
 EXIT_CODE_PLEX_UPDATE="${2}" # DKTODO: use getopt --notify, --error
-LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH} 2>/dev/null")"
+LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH}" 2>/dev/null)"
 
 # DKTODO: add a message with server name and port e.g. link to server?
 MESSAGE=$"Log output:\n${LOG_FILE_CONTENT}"

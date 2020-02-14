@@ -56,6 +56,7 @@ else
 fi
 
 if [ $RET -ne 0 ]; then
+  # DKTODO: maybe move cron notification into the notify script?
 	# Make sure user gets an email about this (when not success or if user has specified when)
   cat "${LOGFILE}" >&2
 

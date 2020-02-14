@@ -270,7 +270,7 @@ configure_cron() {
       save_config "$CONFIGVARS" "$CONFIGFILE"
     fi
 
-    save_config "$CRONVARS" "/etc/plexupdate.cron.conf"
+		save_config "$CRONVARS" "${CONFIGCRON}"
 
     echo
     echo -n "Installing daily cron job... "

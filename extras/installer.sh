@@ -283,7 +283,26 @@ configure_cron() {
       read -e -p "Pushover Sound: " -i "" PUSHOVER_SOUND
 
       save_config "${CRON_NOTIFY_VARS}" "${CONFIG_CRON_NOTIFY}"
+    fi
 
+    # DKTODO: is this the correct place?
+    echo
+    echo -n "Should discord send you a message if an update is available/installed? "
+    if noyes; then
+      SEND_DISCORD=yes
+
+      read -e -p "Discord Bot Token: " -i "" DISCORD_BOT_TOKEN
+
+      read -e -p "Discord Client-ID: " -i "" DISCORD_CLIENT_ID         # DKTODO: is this needed? Over bot is much easier?
+      read -e -p "Discord Client-Secret: " -i "" DISCORD_CLIENT_SECRET # DKTODO: is this needed? Over bot is much easier?
+
+      read -e -p "Discord Channel-ID: " -i "" DISCORD_CHANNEL_ID
+
+      save_config "${CRON_NOTIFY_VARS}" "${CONFIG_CRON_NOTIFY}"
+    fi
+
+    # DKTODO: is this the correct place?
+    if [[ ${SEND_PUSHOVER} == 'yes' ]] || [[ ${SEND_DISCORD} == 'yes' ]]; then
       # set cron notify script path
       CRON_NOTIFY_SCRIPT="${FULL_PATH}/extras/cronwrapper-notify"
     fi

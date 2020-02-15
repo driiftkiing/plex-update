@@ -12,6 +12,8 @@ if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ]
   NOTIFY_LEVEL="error"
 fi
 
+# DKTODO: message should be improved with server-name:port e.g. link, current server version, new version, ...?
+
 sendPushoverMessage() {
   # define local variables
   local PUSHOVER_API
@@ -54,6 +56,38 @@ sendPushoverMessage() {
   fi
 }
 
+sendDiscordMessage() {
+  # define local variables
+  local DISCORD_API_ENDPOINT
+  local DISCORD_API
+  local DISCORD_TITLE
+  local DISCORD_COLOR
+  local DISCORD_POST_DATA
+  local DISCORD_POST_DATA_EMBEDED
+  local NOW # DKTODO: move this out?
+  local DISCORD_FOOTER_TEXT
+
+  # set values
+  DISCORD_API_ENDPOINT="https://discordapp.com/api/v6"
+  DISCORD_API="${DISCORD_API_ENDPOINT}/channels/${DISCORD_CHANNEL_ID}/messages"
+  DISCORD_TITLE="Plex Update"
+  DISCORD_DESCRIPTION="${LOG_FILE_CONTENT}"
+  DISCORD_COLOR="3447003"
+  NOW=$(date)
+  DISCORD_FOOTER_TEXT="Plex Media Server" # DKTODO: a version could be used here
+  DISCORD_FOOTER_ICON_URL="https://dl2.macupdate.com/images/icons256/42311.png?d=1535042731"
+
+  DISCORD_POST_DATA_EMBEDED='{"title":"'"${DISCORD_TITLE}"'","description":"'"${DISCORD_DESCRIPTION}"'","color":"'"${DISCORD_COLOR}"'","timestamp":"'"${NOW}"'","footer":{"text":"'"${DISCORD_FOOTER_TEXT}"'", "icon_url":"'"${DISCORD_FOOTER_ICON_URL}"'"}}'
+  DISCORD_POST_DATA='{"embed":"'"${DISCORD_POST_DATA_EMBEDED}"'"}'
+
+  HTTP_STATUS_CODE=$(wget --server-response --quiet -O /dev/null --header="Authorization: Bot ${DISCORD_BOT_TOKEN}" --header='Content-Type:application/json' --post-data="${DISCORD_POST_DATA}" "${DISCORD_API}" 2>&1 | grep "HTTP/" | awk '{print $2}')
+
+  if [ "$HTTP_STATUS_CODE" -ne 200 ]; then
+    echo "ERROR: Something went wrong on sending pushover message. HTTP status-code is '${HTTP_STATUS_CODE}'" >&2
+    exit 255
+  fi
+}
+
 if [ ! -f ${CONFIG_CRON_NOTIFY} ]; then
   echo "ERROR: You have not configured ${CONFIG_CRON_NOTIFY}" >&2
   exit 255
@@ -62,9 +96,17 @@ else
 fi
 
 if [ "${SEND_PUSHOVER}" = "yes" ]; then
-  if [ -z "${PUSHOVER_USER}" ] && [ -z "${PUSHOVER_TOKEN}" ]; then
+  if [ -z "${PUSHOVER_USER}" ] || [ -z "${PUSHOVER_TOKEN}" ]; then
     echo "ERROR: Config \"PUSHOVER_USER\" and/or \"PUSHOVER_TOKEN\" missing in ${CONFIG_CRON_NOTIFY}" >&2
     exit 255
   fi
   sendPushoverMessage
+fi
+
+if [ "${SEND_DISCORD}" = "yes" ]; then
+  if [ -z "${DISCORD_BOT_TOKEN}" ] || [ -z "${DISCORD_CHANNEL_ID}" ]; then
+    echo "ERROR: Config \"DISCORD_BOT_TOKEN\" and/or \"DISCORD_CHANNEL_ID\" missing in ${CONFIG_CRON_NOTIFY}" >&2
+    exit 255
+  fi
+  sendDiscordMessage
 fi

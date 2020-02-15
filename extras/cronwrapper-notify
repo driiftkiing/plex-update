@@ -83,7 +83,7 @@ sendDiscordMessage() {
   HTTP_STATUS_CODE=$(wget --server-response --quiet -O /dev/null --header="Authorization: Bot ${DISCORD_BOT_TOKEN}" --header='Content-Type:application/json' --post-data="${DISCORD_POST_DATA}" "${DISCORD_API}" 2>&1 | grep "HTTP/" | awk '{print $2}')
 
   if [ "$HTTP_STATUS_CODE" -ne 200 ]; then
-    echo "ERROR: Something went wrong on sending pushover message. HTTP status-code is '${HTTP_STATUS_CODE}'" >&2
+    echo "ERROR: Something went wrong on sending discord message. HTTP status-code is '${HTTP_STATUS_CODE}'" >&2
     exit 255
   fi
 }

@@ -19,9 +19,6 @@ sendPushoverMessage() {
   local PUSHOVER_ENABLE_HTML
   local PUSHOVER_PRIORITY
   local PUSHOVER_MESSAGE_STATUS_COLOR
-  local PUSHOVER_USER
-  local PUSHOVER_TOKEN
-  local PUSHOVER_SOUND
   local PUSHOVER_POST_DATA
   local PUSHOVER_MESSAGE
 
@@ -30,17 +27,12 @@ sendPushoverMessage() {
   PUSHOVER_TITLE="Plex Update"
   PUSHOVER_ENABLE_HTML=1
   PUSHOVER_PRIORITY=0
-  PUSHOVER_MESSAGE_STATUS_COLOR="blue"
-
-  # get function variables
-  PUSHOVER_USER="${1}"
-  PUSHOVER_TOKEN="${2}"
-  PUSHOVER_SOUND="${3}"
+  PUSHOVER_MESSAGE_STATUS_COLOR="#2E86C1"
 
   if [ "${NOTIFY_LEVEL}" == 'error' ]; then
     PUSHOVER_PRIORITY=1
     PUSHOVER_TITLE="${PUSHOVER_TITLE}: Error"
-    PUSHOVER_MESSAGE_STATUS_COLOR="red"
+    PUSHOVER_MESSAGE_STATUS_COLOR="red"  # DKTODO: colors needs to be tested
   fi
 
   PUSHOVER_MESSAGE="<b>App:</b> <font color='#e5a00d'><i>plexupdate</i></font><br />"
@@ -71,7 +63,7 @@ fi
 
 if [ "${SEND_PUSHOVER}" = "yes" ]; then
   if [ -n "${PUSHOVER_USER}" ] && [ -n "${PUSHOVER_TOKEN}" ]; then
-    sendPushoverMessage "${PUSHOVER_USER}" "${PUSHOVER_TOKEN}" "${PUSHOVER_SOUND}"
+    sendPushoverMessage
   else
     echo "ERROR: Config \"PUSHOVER_USER\" and/or \"PUSHOVER_TOKEN\" missing in ${CONFIG_CRON_NOTIFY}" >&2
     exit 255

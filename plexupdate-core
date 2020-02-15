@@ -19,7 +19,7 @@ DEBIAN_INSTALL="dpkg -i"
 DISTRO_INSTALL=""
 
 #Files "owned" by plexupdate, for autoupdate
-PLEXUPDATE_FILES="plexupdate.sh plexupdate-core extras/installer.sh extras/cronwrapper"
+PLEXUPDATE_FILES="plexupdate.sh plexupdate-core extras/installer.sh extras/cronwrapper extras/cronwrapper-notify"
 
 ######## FUNCTIONS ########
 #### Token Management #####

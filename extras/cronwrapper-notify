@@ -79,6 +79,7 @@ sendDiscordMessage() {
   DISCORD_FOOTER_ICON_URL="https://dl2.macupdate.com/images/icons256/42311.png?d=1535042731"
 
   # DKTODO: this should look more readable
+  # DKTODO: jq would be nice, if its possible to use...
   DISCORD_POST_DATA_EMBEDED='{"title":"'"${DISCORD_TITLE}"'","description":"'"${DISCORD_DESCRIPTION}"'","color":"'"${DISCORD_COLOR}"'","timestamp":"'"${DATE_NOW_ISO8601}"'","footer":{"text":"'"${DISCORD_FOOTER_TEXT}"'", "icon_url":"'"${DISCORD_FOOTER_ICON_URL}"'"}}'
   DISCORD_POST_DATA='{"embed":'${DISCORD_POST_DATA_EMBEDED}'}'
 

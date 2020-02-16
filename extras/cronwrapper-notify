@@ -27,10 +27,10 @@ sendPushoverMessage() {
 
   # set values
   PUSHOVER_API="https://api.pushover.net/1/messages.json"
-  PUSHOVER_TITLE="Plex Update"
+  PUSHOVER_TITLE="Plex-Update" # DKTODO: add this to the global variables
   PUSHOVER_ENABLE_HTML=1
   PUSHOVER_PRIORITY=0
-  PUSHOVER_MESSAGE_STATUS_COLOR="#2E86C1"
+  PUSHOVER_MESSAGE_STATUS_COLOR="#2E86C1" # is blue color
 
   if [ "${NOTIFY_LEVEL}" == 'error' ]; then
     PUSHOVER_PRIORITY=1
@@ -41,7 +41,7 @@ sendPushoverMessage() {
   PUSHOVER_MESSAGE="<b>App:</b> <font color='#e5a00d'><i>plexupdate</i></font><br />"
   PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Status:</b> <font color='${PUSHOVER_MESSAGE_STATUS_COLOR}'>${NOTIFY_LEVEL^}</font><br />"
   PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Log-output:</b><br /><br />"
-  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}${LOG_FILE_CONTENT}"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}${LOG_FILE_CONTENT}" # DKTODO: add log-output only, if verbose
 
   PUSHOVER_POST_DATA="title=${PUSHOVER_TITLE}&token=${PUSHOVER_TOKEN}&user=${PUSHOVER_USER}&message=${PUSHOVER_MESSAGE}&html=${PUSHOVER_ENABLE_HTML}&priority=${PUSHOVER_PRIORITY}"
 

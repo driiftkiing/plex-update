@@ -67,6 +67,8 @@ sendDiscordMessage() {
   local DISCORD_POST_DATA_EMBEDED
   local DATE_NOW_ISO8601 # DKTODO: move this out?
   local DISCORD_FOOTER_TEXT
+  local DISCORD_FOOTER_ICON_URL
+  local HTTP_STATUS_CODE
 
   # set values
   DISCORD_API_ENDPOINT="https://discordapp.com/api/v6"

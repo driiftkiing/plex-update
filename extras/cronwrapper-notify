@@ -94,6 +94,42 @@ sendDiscordMessage() {
   fi
 }
 
+sendDataToWebhook() {
+  # define local variables
+  local PLEX_SERVER_NAME
+  local PLEX_CURRENT_VERSION
+  local PLEX_NEW_VERSION
+  local IS_ERROR
+  local IS_NOTIFY
+  local MESSAGE
+  local TITLE
+  local WEBHOOK_POST_DATA
+  local HTTP_STATUS_CODE
+
+  # set values
+  PLEX_SERVER_NAME                # DKTODO: get name of the plex-server (friendly-name from API?)
+  PLEX_CURRENT_VERSION            # DKTODO: get current version, before installing the new version
+  PLEX_NEW_VERSION                # DKTODO: get new version to be installed
+  MESSAGE="New update installed." # DKTODO: this should contain more information... Like was it forced? Is it only "check-update"? e.g.
+  TITLE="Plex Update"             # DKTODO: add this to the global variables
+  IS_ERROR=false
+  IS_NOTIFY=true
+
+  if [ "${NOTIFY_LEVEL}" == 'error' ]; then
+    IS_ERROR=true
+    IS_NOTIFY=false
+  fi
+
+  WEBHOOK_POST_DATA='{"server-name":"'"${PLEX_SERVER_NAME}"'","current-version":"'"${PLEX_CURRENT_VERSION}"'","new-version":"'"${PLEX_NEW_VERSION}"'","is-error":"'"${IS_ERROR}"'","is-notify":"'"${IS_NOTIFY}"'","description":"'"${MESSAGE}"'","title":"'"${TITLE}"'"}'
+
+  HTTP_STATUS_CODE=$(wget --server-response --quiet -O /dev/null --timeout=600 --header="Authorization: ${PLEX_UPDATE_NOTIFY_WEBHOOK_TOKEN}" --header='Content-Type:application/json' --post-data=''"${WEBHOOK_POST_DATA}"'' "${PLEX_UPDATE_NOTIFY_WEBHOOK_URL}" 2>&1 | grep "HTTP/" | awk '{print $2}')
+
+  if [ "$HTTP_STATUS_CODE" -ne 200 ]; then
+    echo "ERROR: Something went wrong on sending data to webhook. HTTP status-code is '${HTTP_STATUS_CODE}'" >&2
+    exit 255
+  fi
+}
+
 if [ ! -f ${CONFIG_CRON_NOTIFY} ]; then
   echo "ERROR: You have not configured ${CONFIG_CRON_NOTIFY}" >&2
   exit 255
@@ -115,4 +151,12 @@ if [ "${SEND_DISCORD}" = "yes" ]; then
     exit 255
   fi
   sendDiscordMessage
+fi
+
+if [ "${SEND_CUSTOM_WEBHOOK}" = "yes" ]; then
+  if [ -z "${PLEX_UPDATE_NOTIFY_WEBHOOK_URL}" ] || [ -z "${PLEX_UPDATE_NOTIFY_WEBHOOK_TOKEN}" ]; then
+    echo "ERROR: Config \"PLEX_UPDATE_NOTIFY_WEBHOOK_URL\" and/or \"PLEX_UPDATE_NOTIFY_WEBHOOK_TOKEN\" missing in ${CONFIG_CRON_NOTIFY}" >&2
+    exit 255
+  fi
+  sendDataToWebhook
 fi

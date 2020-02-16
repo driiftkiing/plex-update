@@ -21,6 +21,9 @@ DISTRO_INSTALL=""
 #Files "owned" by plexupdate, for autoupdate
 PLEXUPDATE_FILES="plexupdate.sh plexupdate-core extras/installer.sh extras/cronwrapper"
 
+GIT_REGEX="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(?(?=.*\.git)(?=(.+(?=\.git)))|(.*))"
+GIT_REMOTE_ORIGIN_URL=$(git config --get remote.origin.url)
+
 ######## FUNCTIONS ########
 #### Token Management #####
 
@@ -266,6 +269,22 @@ info() {
 
 error() {
   echo "ERROR: $@" >&2
+}
+
+gitCurrentBranch() {
+ git branch
+}
+
+githubOwnerName() {
+  if [[ ${GIT_REMOTE_ORIGIN_URL} =~ ${GIT_REGEX} ]]; then
+    echo "${BASH_REMATCH[4]}"
+  fi
+}
+
+githubRepoName() {
+  if [[ ${GIT_REMOTE_ORIGIN_URL} =~ ${GIT_REGEX} ]]; then
+    echo "${BASH_REMATCH[5]}"
+  fi
 }
 
 # Intentionally leaving this hard to find so that people aren't trying to use it manually.

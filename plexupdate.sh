@@ -67,6 +67,8 @@ FILE_SHA=$(mktemp /tmp/plexupdate.sha.XXXX)
 FILE_WGETLOG=$(mktemp /tmp/plexupdate.wget.XXXX)
 SCRIPT_PATH="$(dirname "$0")"
 
+GITHUB_USER_CONTENT_URL=https://raw.githubusercontent.com
+
 ######################################################################
 
 usage() {
@@ -326,6 +328,9 @@ if [ "${CHECKUPDATE}" = "yes" -a "${AUTOUPDATE}" = "no" ]; then
 	pushd "${SCRIPT_PATH}" > /dev/null
 	for filename in $PLEXUPDATE_FILES; do
 		[ -f "$filename" ] || error "Update check failed. '$filename' could not be found"
+
+    # URL for new version check
+    UPSTREAM_GIT_URL="${GITHUB_USER_CONTENT_URL}/${GIT_OWNER:-mrworf}/plexupdate/${BRANCHNAME:-master}"
 
 		REMOTE_SHA=$(getRemoteSHA "$UPSTREAM_GIT_URL/$filename") || error "Update check failed. Unable to fetch '$UPSTREAM_GIT_URL/$filename'."
 		LOCAL_SHA=$(getLocalSHA "$filename")

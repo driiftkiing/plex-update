@@ -1,5 +1,5 @@
-![plexupdate.sh](http://i.imgur.com/ThY5Rvl.png "plexupdate")
-# plexupdate
+![plexupdate.sh](http://i.imgur.com/ThY5Rvl.png "plex-update")
+# plex-update
 
 Plex Update is a bash script which helps you keep Plex Media Server up to date on Linux.
 

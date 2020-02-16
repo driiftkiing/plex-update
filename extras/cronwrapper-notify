@@ -73,13 +73,18 @@ sendDiscordMessage() {
   # set values
   DISCORD_API_ENDPOINT="https://discordapp.com/api/v6"
   DISCORD_API="${DISCORD_API_ENDPOINT}/channels/${DISCORD_CHANNEL_ID}/messages"
-  DISCORD_TITLE="Plex Update"
+  DISCORD_TITLE="Plex-Update"            # DKTODO: add this to the global variables
   # DISCORD_DESCRIPTION="${LOG_FILE_CONTENT}" # DKTODO: disabled for now, need to escape probably
-  DISCORD_DESCRIPTION="Some message"        # DKTODO: define message
-  DISCORD_COLOR="3447003"
+  DISCORD_DESCRIPTION="Update available" # DKTODO: this should contain more information... Like was it forced? Is it only "check-update"? e.g.
+  DISCORD_COLOR="3447003"                # is blue color
   DATE_NOW_ISO8601=$(date +%Y-%m-%dT%H:%M:%S%z)
-  DISCORD_FOOTER_TEXT="Plex Media Server" # DKTODO: a version could be used here
-  DISCORD_FOOTER_ICON_URL="https://dl2.macupdate.com/images/icons256/42311.png?d=1535042731"
+  DISCORD_FOOTER_TEXT="Plex Media Server"                                                    # DKTODO: a version could be used here
+  DISCORD_FOOTER_ICON_URL="https://dl2.macupdate.com/images/icons256/42311.png?d=1535042731" # DKTODO: upload this image to another place?
+
+  if [ "${NOTIFY_LEVEL}" == 'error' ]; then
+    DISCORD_COLOR="15158332" # is red color
+    DISCORD_DESCRIPTION="There was an error in the update process..."
+  fi
 
   # DKTODO: this should look more readable
   # DKTODO: jq would be nice, if its possible to use...

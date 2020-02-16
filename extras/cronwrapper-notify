@@ -115,7 +115,7 @@ sendDataToWebhook() {
   PLEX_SERVER_NAME                # DKTODO: get name of the plex-server (friendly-name from API?)
   PLEX_CURRENT_VERSION            # DKTODO: get current version, before installing the new version
   PLEX_NEW_VERSION                # DKTODO: get new version to be installed
-  MESSAGE="New update installed." # DKTODO: this should contain more information... Like was it forced? Is it only "check-update"? e.g.
+  MESSAGE="New update installed." # DKTODO: this should contain more information... Like was it forced? Is it only "check-update"? Is it currently used? e.g.
   TITLE="Plex Update"             # DKTODO: add this to the global variables
   IS_ERROR=false
   IS_NOTIFY=true

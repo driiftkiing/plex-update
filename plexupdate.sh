@@ -327,6 +327,7 @@ if [ "${CHECKUPDATE}" = "yes" -a "${AUTOUPDATE}" = "no" ]; then
 	for filename in $PLEXUPDATE_FILES; do
 		[ -f "$filename" ] || error "Update check failed. '$filename' could not be found"
 
+    # DKTODO: this should be fixed in branch bugfix/git, revert this change before merge
     # URL for new version check
     UPSTREAM_GIT_URL="https://raw.githubusercontent.com/${GIT_OWNER:-mrworf}/plexupdate/${BRANCHNAME:-master}"
 

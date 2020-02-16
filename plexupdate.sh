@@ -325,12 +325,20 @@ else
 fi
 
 if [ "${CHECKUPDATE}" = "yes" -a "${AUTOUPDATE}" = "no" ]; then
+  local GIT_OWNER_CURRENT
+  local GIT_REPONAME_CURRENT
+  local GIT_BRNACHNAME_CURRENT
+
+  GIT_OWNER_CURRENT=$(githubOwnerName)
+  GIT_REPONAME_CURRENT=$(githubRepoName)
+  GIT_BRNACHNAME_CURRENT=$(gitCurrentBranch)
+
+  # URL for new version check
+  UPSTREAM_GIT_URL="${GITHUB_USER_CONTENT_URL}/${GIT_OWNER_CURRENT:-${GIT_OWNER}}/${GIT_REPONAME_CURRENT-${GIT_REPONAME}}/${GIT_BRNACHNAME_CURRENT:-${BRANCHNAME}}"
+
 	pushd "${SCRIPT_PATH}" > /dev/null
 	for filename in $PLEXUPDATE_FILES; do
 		[ -f "$filename" ] || error "Update check failed. '$filename' could not be found"
-
-    # URL for new version check
-    UPSTREAM_GIT_URL="${GITHUB_USER_CONTENT_URL}/${GIT_OWNER:-mrworf}/plexupdate/${BRANCHNAME:-master}"
 
 		REMOTE_SHA=$(getRemoteSHA "$UPSTREAM_GIT_URL/$filename") || error "Update check failed. Unable to fetch '$UPSTREAM_GIT_URL/$filename'."
 		LOCAL_SHA=$(getLocalSHA "$filename")

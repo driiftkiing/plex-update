@@ -15,11 +15,14 @@
 #         (typically /var/log/daemon.log or /var/log/syslog)
 #
 
-if [ ! -f /etc/plexupdate.cron.conf ]; then
-  echo "ERROR: You have not configured /etc/plexupdate.cron.conf" >&2
+DEFAULT_CRON_CONFIG="/etc/plexupdate.cron.conf"
+CRON_CONFIG=${CRON_CONFIG:-${DEFAULT_CRON_CONFIG}}
+
+if [ ! -f "${CRON_CONFIG}" ]; then
+  echo "ERROR: You have not configured ${CRON_CONFIG}" >&2
   exit 255
 else
-  source /etc/plexupdate.cron.conf
+  source "${CRON_CONFIG}"
 fi
 
 if [ -z "${SCRIPT}" -o ! -f "${SCRIPT}" ]; then

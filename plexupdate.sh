@@ -298,29 +298,7 @@ if [ ! -d "${DOWNLOADDIR}" ]; then
 	exit 1
 fi
 
-if [ -z "${DISTRO_INSTALL}" ]; then
-	if [ -z "${DISTRO}" ]; then
-		# Detect if we're running on redhat instead of ubuntu
-		if [ -f /etc/redhat-release ]; then
-			REDHAT=yes
-			DISTRO="redhat"
-			if ! hash dnf 2>/dev/null; then
-				DISTRO_INSTALL="${REDHAT_INSTALL/dnf/yum}"
-			else
-				DISTRO_INSTALL="${REDHAT_INSTALL}"
-			fi
-		else
-			REDHAT=no
-			DISTRO="debian"
-			DISTRO_INSTALL="${DEBIAN_INSTALL}"
-		fi
-	fi
-else
-	if [ -z "${DISTRO}" -o -z "${BUILD}" ]; then
-		error "Using custom DISTRO_INSTALL requires custom DISTRO and BUILD too"
-		exit 255
-	fi
-fi
+getDistro
 
 if [ "${CHECKUPDATE}" = "yes" -a "${AUTOUPDATE}" = "no" ]; then
 	pushd "${SCRIPT_PATH}" > /dev/null
@@ -346,10 +324,7 @@ if [ "${PUBLIC}" = "no" ] && ! getPlexToken; then
 	PUBLIC="yes"
 fi
 
-if [ "$PUBLIC" != "no" ]; then
-	# It's a public version, so change URL
-	URL_DOWNLOAD=${URL_DOWNLOAD_PUBLIC}
-fi
+getPlexTokenForDownload
 
 if [ "${LISTOPTS}" = "yes" ]; then
 	wgetresults="$(wget "${URL_DOWNLOAD}" -o "${FILE_WGETLOG}" -O -)"
@@ -381,16 +356,8 @@ fi
 # Extract the URL for our release
 info "Retrieving list of available distributions"
 
-# Set "X-Plex-Token" to the auth token, if no token is specified or it is invalid, the list will return public downloads by default
-wgetresults="$(wget --header "X-Plex-Token:"${TOKEN}"" "${URL_DOWNLOAD}" -o "${FILE_WGETLOG}" -O -)"
-if [ $? -ne 0 ]; then
-	error "Unable to retrieve the URL needed for download due to a wget error, run with -v for details"
-	[ "$VERBOSE" = "yes" ] && cat "${FILE_WGETLOG}"
-	exit 1
-fi
-RELEASE=$(grep -ioe '"label"[^}]*' <<<"${wgetresults}" | grep -i "\"distro\":\"${DISTRO}\"" | grep -m1 -i "\"build\":\"${BUILD}\"")
-DOWNLOAD=$(echo ${RELEASE} | grep -m1 -ioe 'https://[^\"]*')
-CHECKSUM=$(echo ${RELEASE} | grep -ioe '\"checksum\"\:\"[^\"]*' | sed 's/\"checksum\"\:\"//')
+retrieveDownloadList
+parseDownloadList
 
 verboseOutput RELEASE DOWNLOAD CHECKSUM
 
@@ -410,11 +377,7 @@ elif [ -z "${CHECKSUM}" ]; then
 	exit 3
 fi
 
-FILENAME="$(basename 2>/dev/null ${DOWNLOAD})"
-if [ $? -ne 0 ]; then
-	error "Failed to parse HTML, download cancelled."
-	exit 3
-fi
+extractFilenameFromDownload
 
 echo "${CHECKSUM}  ${DOWNLOADDIR}/${FILENAME}" >"${FILE_SHA}"
 

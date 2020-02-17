@@ -38,15 +38,47 @@ elif [ ${EUID} -eq 0 ]; then
   fi
 fi
 
+SCRIPT_PATH="$(dirname "${SCRIPT}")"
+SCRIPT_CORE="${SCRIPT_PATH}/plexupdate-core"
+
+if ! source "${SCRIPT_CORE}"; then
+  echo "ERROR: plexupdate-core can't be found. Please redownload plexupdate and try again." >&2
+  exit 255
+fi
+
 if [ -n "$CONF" ]; then
   # We have a config file, prefix it with parameter
   if [ ! -f "${CONF}" ]; then
     echo "ERROR: Cannot find config file (tried ${CONF})" >&2
     exit 255
   fi
+
+  source "${CONF}"
+  # DKTODO: only for testing
+  echo ' --> hier3'
+  echo "${CONF}"
+  echo $VERBOSE
+  echo ' <-- hier3'
   CONF="--config=${CONF}"
 fi
 
+# get the current version
+PLEX_CURRENT_VERSION="$(getPlexVersion)"
+
+# get thew new version
+getPlexTokenForDownload
+retrieveDownloadList
+getDistro
+parseDownloadList
+extractFilenameFromDownload
+PLEX_NEW_VERSION="$(parseVersion "${FILENAME}")"
+# DKTODO: only for testing
+echo ' --> hier2'
+echo $VERBOSE
+echo $TOKEN
+echo ${DOWNLOAD}
+echo ${FILENAME}
+echo ' <-- hier2'
 LOGFILE=$(mktemp /tmp/plexupdate.cron.XXXX)
 
 RET=0
@@ -58,6 +90,12 @@ else
   RET=$?
 fi
 
+# DKTODO: only for testing
+echo ' --> hier'
+echo "$PLEX_CURRENT_VERSION"
+echo "$PLEX_NEW_VERSION"
+echo ' <-- hier'
+
 if [ $RET -ne 0 ]; then
   # DKTODO: maybe move cron notification into the notify script?
   # Make sure user gets an email about this (when not success or if user has specified when)
@@ -65,7 +103,7 @@ if [ $RET -ne 0 ]; then
 
   # execute notify-script if defined and available
   if [ -n "${CRON_NOTIFY_SCRIPT}" ] && [ -f "${CRON_NOTIFY_SCRIPT}" ]; then
-    source "${CRON_NOTIFY_SCRIPT}" "${LOGFILE}" "${RET}"
+    source "${CRON_NOTIFY_SCRIPT}"
   fi
 
   # Output will produce a cron email, so we can reset the exit status

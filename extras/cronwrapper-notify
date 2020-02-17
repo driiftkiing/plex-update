@@ -3,8 +3,8 @@
 
 # define variables
 CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
-LOG_FILE_PATH="${1}"         # DKTODO: use getopt --log-file-path
-EXIT_CODE_PLEX_UPDATE="${2}" # DKTODO: use getopt --notify, --error
+LOG_FILE_PATH="${LOGFILE}"     # DKTODO: use getopt --log-file-path
+EXIT_CODE_PLEX_UPDATE="${RET}" # DKTODO: use getopt --notify, --error
 LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH}" 2>/dev/null)"
 NOTIFY_LEVEL="notify"
 
@@ -40,6 +40,8 @@ sendPushoverMessage() {
 
   PUSHOVER_MESSAGE="<b>App:</b> <font color='#e5a00d'><i>plexupdate</i></font><br />"
   PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Status:</b> <font color='${PUSHOVER_MESSAGE_STATUS_COLOR}'>${NOTIFY_LEVEL^}</font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Current version:</b> <font color='#e5a00d'><i>${PLEX_CURRENT_VERSION}</i></font><br />" # DKTODO: need to be tested
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>New version:</b> <font color='#e5a00d'><i>${PLEX_NEW_VERSION}</i></font><br />"         # DKTODO: need to be tested
   PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Log-output:</b><br /><br />"
   PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}${LOG_FILE_CONTENT}" # DKTODO: add log-output only, if verbose
 
@@ -102,8 +104,8 @@ sendDiscordMessage() {
 sendDataToWebhook() {
   # define local variables
   local PLEX_SERVER_NAME
-  local PLEX_CURRENT_VERSION
-  local PLEX_NEW_VERSION
+  #  local PLEX_CURRENT_VERSION
+  #  local PLEX_NEW_VERSION
   local IS_ERROR
   local IS_NOTIFY
   local MESSAGE

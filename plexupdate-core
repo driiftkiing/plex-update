@@ -73,7 +73,7 @@ getPlexServerToken() {
   for I in "${VALIDPATHS[@]}"; do
     if [ ! -z "${I}" -a -f "${I}${PREFFILE}" ]; then
       # When running installer.sh directly from wget, $0 will return bash
-      if [ "$(basename $0)" = "installer.sh" -o "$(basename $0)" = "bash" ]; then
+      if [ "$(basename "${BASH_SOURCE[0]}")" = "installer.sh" -o "$(basename "${BASH_SOURCE[0]}")" = "bash" ]; then
         TOKEN=$(sudo sed -n 's/.*PlexOnlineToken="\([[:alnum:]_-]*\).*".*/\1/p' "${I}${PREFFILE}" 2>/dev/null)
       else
         TOKEN=$(sed -n 's/.*PlexOnlineToken="\([[:alnum:]_-]*\).*".*/\1/p' "${I}${PREFFILE}" 2>/dev/null)
@@ -243,6 +243,69 @@ getPlexVersion() {
     error "Unknown OS, exiting."
     exit 1
   fi
+}
+
+getPlexTokenForDownload() {
+  if [ "${PUBLIC}" = "no" ] && ! getPlexToken; then
+    error "Unable to get Plex token, falling back to public release"
+    PUBLIC="yes"
+  fi
+
+  if [ "$PUBLIC" != "no" ]; then
+    # It's a public version, so change URL
+    URL_DOWNLOAD=${URL_DOWNLOAD_PUBLIC}
+  fi
+}
+
+retrieveDownloadList() {
+  # Set "X-Plex-Token" to the auth token, if no token is specified or it is invalid, the list will return public downloads by default
+  wgetresults="$(wget --header "X-Plex-Token:\"${TOKEN}\"" "${URL_DOWNLOAD}" -o "${FILE_WGETLOG:-/dev/null}" -O -)"
+
+  if [ $? -ne 0 ]; then
+    error "Unable to retrieve the URL needed for download due to a wget error, run with -v for details"
+    [ "$VERBOSE" = "yes" ] && cat "${FILE_WGETLOG}"
+    exit 1
+  fi
+}
+
+parseDownloadList() {
+  RELEASE=$(grep -ioe '"label"[^}]*' <<<"${wgetresults}" | grep -i "\"distro\":\"${DISTRO}\"" | grep -m1 -i "\"build\":\"${BUILD}\"")
+  DOWNLOAD=$(echo "${RELEASE}" | grep -m1 -ioe 'https://[^\"]*')
+  CHECKSUM=$(echo "${RELEASE}" | grep -ioe '\"checksum\"\:\"[^\"]*' | sed 's/\"checksum\"\:\"//')
+}
+
+extractFilenameFromDownload() {
+  FILENAME="$(basename 2>/dev/null "${DOWNLOAD}")"
+  if [ $? -ne 0 ]; then
+    error "Failed to parse HTML, download cancelled."
+    exit 3
+  fi
+}
+
+getDistro() {
+  if [ -z "${DISTRO_INSTALL}" ]; then
+	if [ -z "${DISTRO}" ]; then
+		# Detect if we're running on redhat instead of ubuntu
+		if [ -f /etc/redhat-release ]; then
+			REDHAT=yes
+			DISTRO="redhat"
+			if ! hash dnf 2>/dev/null; then
+				DISTRO_INSTALL="${REDHAT_INSTALL/dnf/yum}"
+			else
+				DISTRO_INSTALL="${REDHAT_INSTALL}"
+			fi
+		else
+			REDHAT=no
+			DISTRO="debian"
+			DISTRO_INSTALL="${DEBIAN_INSTALL}"
+		fi
+	fi
+else
+	if [ -z "${DISTRO}" -o -z "${BUILD}" ]; then
+		error "Using custom DISTRO_INSTALL requires custom DISTRO and BUILD too"
+		exit 255
+	fi
+fi
 }
 
 verboseOutput() {

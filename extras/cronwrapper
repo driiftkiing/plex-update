@@ -54,31 +54,16 @@ if [ -n "$CONF" ]; then
   fi
 
   source "${CONF}"
-  # DKTODO: only for testing
-  echo ' --> hier3'
-  echo "${CONF}"
-  echo $VERBOSE
-  echo ' <-- hier3'
+
   CONF="--config=${CONF}"
 fi
 
 # get the current version
 PLEX_CURRENT_VERSION="$(getPlexVersion)"
 
-# get thew new version
-getPlexTokenForDownload
-retrieveDownloadList
-getDistro
-parseDownloadList
-extractFilenameFromDownload
-PLEX_NEW_VERSION="$(parseVersion "${FILENAME}")"
-# DKTODO: only for testing
-echo ' --> hier2'
-echo $VERBOSE
-echo $TOKEN
-echo ${DOWNLOAD}
-echo ${FILENAME}
-echo ' <-- hier2'
+# get the new version
+PLEX_NEW_VERSION=$(parsePlexNewVersion | tail -n 1)
+
 LOGFILE=$(mktemp /tmp/plexupdate.cron.XXXX)
 
 RET=0
@@ -89,12 +74,6 @@ else
   "${SCRIPT}" "${CONF}" >"${LOGFILE}" 2>&1
   RET=$?
 fi
-
-# DKTODO: only for testing
-echo ' --> hier'
-echo "$PLEX_CURRENT_VERSION"
-echo "$PLEX_NEW_VERSION"
-echo ' <-- hier'
 
 if [ $RET -ne 0 ]; then
   # DKTODO: maybe move cron notification into the notify script?
@@ -113,4 +92,5 @@ if [ $RET -ne 0 ]; then
 fi
 
 rm "${LOGFILE}" 2>/dev/null
+
 exit $RET

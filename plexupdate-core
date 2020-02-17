@@ -259,7 +259,7 @@ getPlexTokenForDownload() {
 
 retrieveDownloadList() {
   # Set "X-Plex-Token" to the auth token, if no token is specified or it is invalid, the list will return public downloads by default
-  wgetresults="$(wget --header "X-Plex-Token:\"${TOKEN}\"" "${URL_DOWNLOAD}" -o "${FILE_WGETLOG:-/dev/null}" -O -)"
+  wgetresults="$(wget --header "X-Plex-Token:${TOKEN}" "${URL_DOWNLOAD}" -o "${FILE_WGETLOG:-/dev/null}" -O -)"
 
   if [ $? -ne 0 ]; then
     error "Unable to retrieve the URL needed for download due to a wget error, run with -v for details"
@@ -284,28 +284,50 @@ extractFilenameFromDownload() {
 
 getDistro() {
   if [ -z "${DISTRO_INSTALL}" ]; then
-	if [ -z "${DISTRO}" ]; then
-		# Detect if we're running on redhat instead of ubuntu
-		if [ -f /etc/redhat-release ]; then
-			REDHAT=yes
-			DISTRO="redhat"
-			if ! hash dnf 2>/dev/null; then
-				DISTRO_INSTALL="${REDHAT_INSTALL/dnf/yum}"
-			else
-				DISTRO_INSTALL="${REDHAT_INSTALL}"
-			fi
-		else
-			REDHAT=no
-			DISTRO="debian"
-			DISTRO_INSTALL="${DEBIAN_INSTALL}"
-		fi
-	fi
-else
-	if [ -z "${DISTRO}" -o -z "${BUILD}" ]; then
-		error "Using custom DISTRO_INSTALL requires custom DISTRO and BUILD too"
-		exit 255
-	fi
-fi
+    if [ -z "${DISTRO}" ]; then
+      # Detect if we're running on redhat instead of ubuntu
+      if [ -f /etc/redhat-release ]; then
+        REDHAT=yes
+        DISTRO="redhat"
+        if ! hash dnf 2>/dev/null; then
+          DISTRO_INSTALL="${REDHAT_INSTALL/dnf/yum}"
+        else
+          DISTRO_INSTALL="${REDHAT_INSTALL}"
+        fi
+      else
+        REDHAT=no
+        DISTRO="debian"
+        DISTRO_INSTALL="${DEBIAN_INSTALL}"
+      fi
+    fi
+  else
+    if [ -z "${DISTRO}" -o -z "${BUILD}" ]; then
+      error "Using custom DISTRO_INSTALL requires custom DISTRO and BUILD too"
+      exit 255
+    fi
+  fi
+}
+
+getArch() {
+  uname -m
+}
+
+getBuild() {
+  BUILD="linux-$(getArch)"
+}
+
+parsePlexNewVersion() {
+  getPlexTokenForDownload
+  retrieveDownloadList
+  getDistro
+  getBuild
+  parseDownloadList
+  extractFilenameFromDownload
+
+  echo ""
+
+  PLEX_NEW_VERSION=$(parseVersion "${FILENAME}")
+  echo "${PLEX_NEW_VERSION}"
 }
 
 verboseOutput() {

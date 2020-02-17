@@ -6,13 +6,27 @@ CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
 LOG_FILE_PATH="${LOGFILE}"     # DKTODO: use getopt --log-file-path
 EXIT_CODE_PLEX_UPDATE="${RET}" # DKTODO: use getopt --notify, --error
 LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH}" 2>/dev/null)"
-NOTIFY_LEVEL="notify"
+STATUS="notify"
 
-if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ]; then
-  NOTIFY_LEVEL="error"
+if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 7 ]; then
+  STATUS="error"
 fi
 
 # DKTODO: message should be improved with server-name:port e.g. link, current server version, new version, ...?
+
+isError() {
+  if [ "${STATUS}" == 'error' ]; then
+    echo 'true'
+  fi
+}
+
+isCheckOnly() {
+  if [ "${CHECKONLY}" == "yes" ]; then
+    echo "${CHECKONLY^}"
+  else
+    echo "No"
+  fi
+}
 
 sendPushoverMessage() {
   # define local variables
@@ -32,18 +46,19 @@ sendPushoverMessage() {
   PUSHOVER_PRIORITY=0
   PUSHOVER_MESSAGE_STATUS_COLOR="#2E86C1" # is blue color
 
-  if [ "${NOTIFY_LEVEL}" == 'error' ]; then
+  if [ "$(isError)" == "true" ]; then
     PUSHOVER_PRIORITY=1
     PUSHOVER_TITLE="${PUSHOVER_TITLE}: Error"
     PUSHOVER_MESSAGE_STATUS_COLOR="red" # DKTODO: colors needs to be tested
   fi
 
-  PUSHOVER_MESSAGE="<b>App:</b> <font color='#e5a00d'><i>plexupdate</i></font><br />"
-  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Status:</b> <font color='${PUSHOVER_MESSAGE_STATUS_COLOR}'>${NOTIFY_LEVEL^}</font><br />"
-  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Current version:</b> <font color='#e5a00d'><i>${PLEX_CURRENT_VERSION}</i></font><br />" # DKTODO: need to be tested
-  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>New version:</b> <font color='#e5a00d'><i>${PLEX_NEW_VERSION}</i></font><br />"         # DKTODO: need to be tested
-  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Log-output:</b><br /><br />"
-  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}${LOG_FILE_CONTENT}" # DKTODO: add log-output only, if verbose
+  PUSHOVER_MESSAGE="<b>App:</b> <font color='#e5a00d'><i>plex-update</i></font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Status:</b> <font color='${PUSHOVER_MESSAGE_STATUS_COLOR}'>${STATUS^}</font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Current version:</b> <font color='#e5a00d'>${PLEX_CURRENT_VERSION}</font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>New version:</b> <font color='#e5a00d'>${PLEX_NEW_VERSION}</font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<b>Check-only:</b> <font color='#e5a00d'>$(isCheckOnly)</font><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}<br /><b>Additional informations:</b><br />"
+  PUSHOVER_MESSAGE="${PUSHOVER_MESSAGE}${LOG_FILE_CONTENT}"
 
   PUSHOVER_POST_DATA="title=${PUSHOVER_TITLE}&token=${PUSHOVER_TOKEN}&user=${PUSHOVER_USER}&message=${PUSHOVER_MESSAGE}&html=${PUSHOVER_ENABLE_HTML}&priority=${PUSHOVER_PRIORITY}"
 
@@ -83,7 +98,7 @@ sendDiscordMessage() {
   DISCORD_FOOTER_TEXT="Plex Media Server"                                                    # DKTODO: a version could be used here
   DISCORD_FOOTER_ICON_URL="https://dl2.macupdate.com/images/icons256/42311.png?d=1535042731" # DKTODO: upload this image to another place?
 
-  if [ "${NOTIFY_LEVEL}" == 'error' ]; then
+  if [ "$(isError)" == "true" ]; then
     DISCORD_COLOR="15158332" # is red color
     DISCORD_DESCRIPTION="There was an error in the update process..."
   fi
@@ -104,8 +119,6 @@ sendDiscordMessage() {
 sendDataToWebhook() {
   # define local variables
   local PLEX_SERVER_NAME
-  #  local PLEX_CURRENT_VERSION
-  #  local PLEX_NEW_VERSION
   local IS_ERROR
   local IS_NOTIFY
   local MESSAGE
@@ -115,14 +128,12 @@ sendDataToWebhook() {
 
   # set values
   PLEX_SERVER_NAME                # DKTODO: get name of the plex-server (friendly-name from API?)
-  PLEX_CURRENT_VERSION            # DKTODO: get current version, before installing the new version
-  PLEX_NEW_VERSION                # DKTODO: get new version to be installed
   MESSAGE="New update installed." # DKTODO: this should contain more information... Like was it forced? Is it only "check-update"? Is it currently used? e.g.
   TITLE="Plex Update"             # DKTODO: add this to the global variables
   IS_ERROR=false
   IS_NOTIFY=true
 
-  if [ "${NOTIFY_LEVEL}" == 'error' ]; then
+  if [ "$(isError)" == "true" ]; then
     IS_ERROR=true
     IS_NOTIFY=false
   fi

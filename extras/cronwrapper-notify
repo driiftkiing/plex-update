@@ -8,7 +8,7 @@ EXIT_CODE_PLEX_UPDATE="${RET}" # DKTODO: use getopt --notify, --error
 LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH}" 2>/dev/null)"
 STATUS="notify"
 
-if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 7 ]; then
+if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 7 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 6 ]; then
   STATUS="error"
 fi
 

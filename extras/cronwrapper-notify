@@ -6,7 +6,7 @@ CONFIG_CRON_NOTIFY="/etc/plexupdate.cron.notify.conf"
 LOG_FILE_PATH="${LOGFILE}"     # DKTODO: use getopt --log-file-path
 EXIT_CODE_PLEX_UPDATE="${RET}" # DKTODO: use getopt --notify, --error
 LOG_FILE_CONTENT="$(cat "${LOG_FILE_PATH}" 2>/dev/null)"
-STATUS="notify"
+STATUS="notify" # DKTODO: use NOTIFY_LEVEL
 
 if [ "${EXIT_CODE_PLEX_UPDATE}" -ne 0 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 10 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 7 ] && [ "${EXIT_CODE_PLEX_UPDATE}" -ne 6 ]; then
   STATUS="error"

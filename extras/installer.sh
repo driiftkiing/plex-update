@@ -299,7 +299,7 @@ configure_cron() {
 
     # DKTODO: is this the correct place?
     echo
-    echo -n "Should discord send you a message if an update is available/installed? "
+    echo -n "Should a custom webhook send you a message if an update is available/installed? "
     if noyes; then
       SEND_CUSTOM_WEBHOOK=yes
 
